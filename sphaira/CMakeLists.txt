@@ -35,7 +35,7 @@ option(ENABLE_DEVOPTAB_WEBDAV "" ON)
 # it also adds 230k to binary size, and i don't think anyone will use it.
 option(ENABLE_DEVOPTAB_SFTP "" OFF)
 
-set(sphaira_VERSION 1.0.8)
+set(sphaira_VERSION 1.0.9)
 
 project(sphaira
     VERSION ${sphaira_VERSION}
@@ -104,6 +104,7 @@ add_executable(sphaira
     source/ui/popup_list.cpp
     source/ui/popup_multi_select.cpp
     source/ui/progress_box.cpp
+    source/ui/install_queue.cpp
     source/ui/scrollable_text.cpp
     source/ui/sidebar.cpp
     source/ui/widget.cpp
