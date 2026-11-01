@@ -1001,8 +1001,16 @@ auto install_forwader_internal(ui::ProgressBox* pbox, OwoConfig& config, NcmStor
         config.args = config.nro_path + ' ' + config.args;
     }
 
-    // Keep one forwarder identity per path and arguments, including older installs.
-    const auto hash_path = config.nro_path + config.args;
+    // create tid by using a hash over path + args. A non-default address
+    // space is part of the hash, so forwarders for the same NRO that differ
+    // only in address space (eg. a 32-bit and a 39-bit launcher entry) get
+    // different title ids and coexist instead of overwriting each other.
+    // The default 36-bit space keeps the historical unsalted hash, so the
+    // title ids of forwarders installed by earlier builds do not change.
+    auto hash_path = config.nro_path + config.args;
+    if (config.address_space != ForwarderAddressSpace::Bit36) {
+        hash_path += "\naddress-space=" + std::to_string(static_cast<unsigned>(config.address_space)) + "\nsphaira-forwarder=1";
+    }
     const auto hash = forwarder_path_hash(hash_path);
 
     // A native-game forwarder gets a retail-range title id and AllowDebug
@@ -1017,7 +1025,10 @@ auto install_forwader_internal(ui::ProgressBox* pbox, OwoConfig& config, NcmStor
         || (config.native_game_mode == ForwarderNativeGameMode::Automatic && detected_nethersx2);
     const u64 tid = native_game ? native_game_forwarder_tid(hash) : homebrew_forwarder_tid(hash);
 
-    // Include earlier title-id formats and paths without the sdmc: prefix.
+    // Remove the other title-id representations of this same
+    // path+args+address space, including earlier formats and paths
+    // without the sdmc: prefix. Forwarders hashed with a different
+    // address space are separate entries and are deliberately kept.
     std::vector<u64> legacy_tids;
     append_forwarder_tid_candidates(legacy_tids, hash);
     const auto hash_path_without_sdmc = remove_sdmc_prefixes(hash_path);
